@@ -11,14 +11,16 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 1 is focused on the repository foundation:
+Phase 2 is now focused on the HTTP bootstrap milestone:
 
-- Minimal runnable Go executable in `cmd/server/main.go`
-- Initial project directory structure
-- Initial README describing project intent, scope, and milestones
+- Runnable Go executable in `cmd/server/main.go`
+- Standard-library HTTP server with route registration
+- Config-based port selection through the `PORT` environment variable
+- JSON responses from `GET /` and `GET /health`
+- Basic server-side timeouts for safer local operation
 
-The service endpoint, Coinbase integration, Redis cache, and Docker Compose setup
-will be added in later phases.
+Coinbase integration, Redis cache, and Docker Compose setup will be added in
+later phases.
 
 ## Planned Architecture
 
@@ -51,6 +53,27 @@ will be added in later phases.
    Docker Compose and local run instructions.
 8. Phase 8: Quality pass
    Focused tests, improved reliability, documented tradeoffs, and final README.
+
+## Running Locally
+
+Start the service:
+
+```bash
+go run ./cmd/server
+```
+
+Optionally override the default port if the default port is already in use:
+
+```bash
+PORT=9090 go run ./cmd/server
+```
+
+Example requests:
+
+```bash
+curl http://localhost:8080/
+curl http://localhost:8080/health
+```
 
 ## Scope Notes
 
