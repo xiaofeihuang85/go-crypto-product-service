@@ -5,14 +5,21 @@ import (
 	"net/http"
 
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/api"
+	"github.com/xiaofeihuang85/go-crypto-product-service/internal/client"
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/config"
+	"github.com/xiaofeihuang85/go-crypto-product-service/internal/service"
 )
 
 func main() {
 	cfg := config.Load()
+	httpClient := &http.Client{
+		Timeout: cfg.UpstreamTimeout,
+	}
+	coinbaseClient := client.NewCoinbaseClient(cfg.CoinbaseBaseURL, httpClient)
+	productService := service.NewProductService(coinbaseClient)
 	server := &http.Server{
 		Addr:         cfg.Address(),
-		Handler:      api.NewRouter(cfg.ServiceName),
+		Handler:      api.NewRouter(cfg.ServiceName, productService),
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		IdleTimeout:  cfg.IdleTimeout,

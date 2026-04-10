@@ -11,16 +11,17 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 2 is now focused on the HTTP bootstrap milestone:
+Phase 3 is now focused on Coinbase product integration:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
 - Config-based port selection through the `PORT` environment variable
-- JSON responses from `GET /` and `GET /health`
-- Basic server-side timeouts for safer local operation
+- JSON responses from `GET /`, `GET /health`, and `GET /products/{product_id}`
+- Thin Coinbase client for fetching a single product from the public market
+  products endpoint
+- Basic server-side and upstream HTTP timeouts for safer local operation
 
-Coinbase integration, Redis cache, and Docker Compose setup will be added in
-later phases.
+Redis cache and Docker Compose setup will be added in later phases.
 
 ## Planned Architecture
 
@@ -73,6 +74,13 @@ Example requests:
 ```bash
 curl http://localhost:8080/
 curl http://localhost:8080/health
+curl http://localhost:8080/products/BTC-USD
+```
+
+Optionally override the Coinbase base URL for local testing:
+
+```bash
+COINBASE_BASE_URL=https://api.coinbase.com go run ./cmd/server
 ```
 
 ## Scope Notes
