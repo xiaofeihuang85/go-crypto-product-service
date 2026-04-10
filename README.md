@@ -77,12 +77,6 @@ curl http://localhost:8080/health
 curl http://localhost:8080/products/BTC-USD
 ```
 
-Optionally override the Coinbase base URL for local testing:
-
-```bash
-COINBASE_BASE_URL=https://api.coinbase.com go run ./cmd/server
-```
-
 ## Scope Notes
 
 This project is meant to represent a clean, well-explained subset of a cache
