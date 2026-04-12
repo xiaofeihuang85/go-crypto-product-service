@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/client"
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/model"
@@ -90,6 +91,7 @@ func toProductResponse(product model.CoinbaseProduct) model.ProductResponse {
 		IsTradingEnabled: isTradingEnabled(product.Status),
 		Price:            product.Price,
 		PriceChange24H:   product.PricePercentageChange24h,
+		RetrievedAt:      time.Now().UTC().Format(time.RFC3339),
 		Source:           "coinbase",
 	}
 }

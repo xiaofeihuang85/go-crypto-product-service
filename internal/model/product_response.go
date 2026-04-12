@@ -11,5 +11,6 @@ type ProductResponse struct {
 	Price            string `json:"price"`
 	PriceChange24H   string `json:"price_change_24h"`
 	CacheStatus      string `json:"cache_status"`
+	RetrievedAt      string `json:"retrieved_at"`
 	Source           string `json:"source"`
 }

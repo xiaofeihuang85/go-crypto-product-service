@@ -11,7 +11,7 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 5 is now focused on Redis-backed caching:
+Phase 6 is now focused on the main endpoint polish:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -23,6 +23,8 @@ Phase 5 is now focused on Redis-backed caching:
 - Read-through Redis cache with a short TTL for product lookups
 - Cache is best-effort: Redis failures fall back to live Coinbase data instead of
   failing the request
+- Polished primary endpoint response with `cache_status` and `retrieved_at`
+- Structured API errors with consistent error codes and request paths
 - Basic server-side and upstream HTTP timeouts for safer local operation
 
 Docker Compose setup will be added in later phases.
@@ -41,22 +43,22 @@ Docker Compose setup will be added in later phases.
 
 ## Milestones
 
-1. Phase 1: Foundation
+1. Phase 1: Foundation  
    Runnable executable, repo structure, initial documentation.
-2. Phase 2: HTTP bootstrap
+2. Phase 2: HTTP bootstrap  
    Minimal HTTP server with route wiring and config-driven startup.
-3. Phase 3: Coinbase integration
+3. Phase 3: Coinbase integration  
    Upstream client with timeout handling and parsed product data.
-4. Phase 4: Domain transformation
+4. Phase 4: Domain transformation  
    Internal models and structured API response shaping.
-5. Phase 5: Redis caching
+5. Phase 5: Redis caching  
    Simple read-through cache with TTL.
-6. Phase 6: Main endpoint
+6. Phase 6: Main endpoint  
    Endpoint that checks cache, fetches upstream data on miss, transforms it, and
    returns structured JSON.
-7. Phase 7: Local operations
+7. Phase 7: Local operations  
    Docker Compose and local run instructions.
-8. Phase 8: Quality pass
+8. Phase 8: Quality pass  
    Focused tests, improved reliability, documented tradeoffs, and final README.
 
 ## Running Locally
@@ -104,6 +106,7 @@ Example product response:
   "price": "70813.85",
   "price_change_24h": "-2.66118725176928",
   "cache_status": "miss",
+  "retrieved_at": "2026-04-12T17:22:46Z",
   "source": "coinbase"
 }
 ```
@@ -117,6 +120,21 @@ uses a read-through flow with a short TTL and a cache key shaped like `product:{
 More advanced invalidation, refresh behavior, and multi-node cache coordination are
 future-scaling concerns that can be described and discussed without fully implementing
 them in this version of the project.
+
+Example cache flow:
+
+1. First request for `GET /products/BTC-USD` returns `cache_status: "miss"` and stores the transformed response in Redis.
+2. A repeated request for the same product returns `cache_status: "hit"` from Redis while keeping `source: "coinbase"` to show the origin of the data.
+
+Example error response:
+
+```json
+{
+  "code": "product_not_found",
+  "error": "product not found: XXX-XXX",
+  "path": "/products/XXX-XXX"
+}
+```
 
 ## Scope Notes
 
