@@ -1,15 +1,14 @@
 package model
 
 type ProductResponse struct {
-	ProductID                string `json:"product_id"`
-	DisplayName              string `json:"display_name"`
-	BaseCurrencyID           string `json:"base_currency_id"`
-	BaseName                 string `json:"base_name"`
-	QuoteCurrencyID          string `json:"quote_currency_id"`
-	QuoteName                string `json:"quote_name"`
-	Status                   string `json:"status"`
-	Price                    string `json:"price"`
-	PricePercentageChange24h string `json:"price_percentage_change_24h"`
-	BaseIncrement            string `json:"base_increment"`
-	QuoteIncrement           string `json:"quote_increment"`
+	ProductID        string `json:"product_id"`
+	MarketPair       string `json:"market_pair"`
+	ProductName      string `json:"product_name"`
+	BaseCurrency     string `json:"base_currency"`
+	QuoteCurrency    string `json:"quote_currency"`
+	Status           string `json:"status"`
+	IsTradingEnabled bool   `json:"is_trading_enabled"`
+	Price            string `json:"price"`
+	PriceChange24H   string `json:"price_change_24h"`
+	Source           string `json:"source"`
 }

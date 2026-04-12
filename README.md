@@ -11,7 +11,7 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 3 is now focused on Coinbase product integration:
+Phase 4 is now focused on domain transformation:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -19,6 +19,7 @@ Phase 3 is now focused on Coinbase product integration:
 - JSON responses from `GET /`, `GET /health`, and `GET /products/{product_id}`
 - Thin Coinbase client for fetching a single product from the public market
   products endpoint
+- Transforms Coinbase data into a cleaner market view with derived fields such as `market_pair`, `is_trading_enabled`, and `source`
 - Basic server-side and upstream HTTP timeouts for safer local operation
 
 Redis cache and Docker Compose setup will be added in later phases.
@@ -76,6 +77,27 @@ curl http://localhost:8080/
 curl http://localhost:8080/health
 curl http://localhost:8080/products/BTC-USD
 ```
+
+Example product response:
+
+```json
+{
+  "product_id": "BTC-USD",
+  "market_pair": "BTC/USD",
+  "product_name": "Bitcoin",
+  "base_currency": "BTC",
+  "quote_currency": "USD",
+  "status": "online",
+  "is_trading_enabled": true,
+  "price": "70813.85",
+  "price_change_24h": "-2.66118725176928",
+  "source": "coinbase"
+}
+```
+
+The product response is intentionally service-owned rather than a raw pass-through
+of the upstream Coinbase schema. This keeps the API easier to reason about and
+sets up a cleaner contract for the upcoming cache layer.
 
 ## Scope Notes
 

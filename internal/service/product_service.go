@@ -46,17 +46,58 @@ func (s *ProductService) GetProduct(ctx context.Context, productID string) (mode
 		}
 	}
 
+	return toProductResponse(product), nil
+}
+
+func toProductResponse(product model.CoinbaseProduct) model.ProductResponse {
 	return model.ProductResponse{
-		ProductID:                product.ProductID,
-		DisplayName:              product.DisplayName,
-		BaseCurrencyID:           product.BaseCurrencyID,
-		BaseName:                 product.BaseName,
-		QuoteCurrencyID:          product.QuoteCurrencyID,
-		QuoteName:                product.QuoteName,
-		Status:                   product.Status,
-		Price:                    product.Price,
-		PricePercentageChange24h: product.PricePercentageChange24h,
-		BaseIncrement:            product.BaseIncrement,
-		QuoteIncrement:           product.QuoteIncrement,
-	}, nil
+		ProductID:        product.ProductID,
+		MarketPair:       buildMarketPair(product.BaseCurrencyID, product.QuoteCurrencyID),
+		ProductName:      resolveProductName(product),
+		BaseCurrency:     product.BaseCurrencyID,
+		QuoteCurrency:    product.QuoteCurrencyID,
+		Status:           normalizeStatus(product.Status),
+		IsTradingEnabled: isTradingEnabled(product.Status),
+		Price:            product.Price,
+		PriceChange24H:   product.PricePercentageChange24h,
+		Source:           "coinbase",
+	}
+}
+
+func buildMarketPair(baseCurrency, quoteCurrency string) string {
+	if baseCurrency == "" || quoteCurrency == "" {
+		return ""
+	}
+
+	return baseCurrency + "/" + quoteCurrency
+}
+
+func resolveProductName(product model.CoinbaseProduct) string {
+	if product.BaseName != "" {
+		return product.BaseName
+	}
+
+	if product.DisplayName != "" {
+		return product.DisplayName
+	}
+
+	return product.ProductID
+}
+
+func normalizeStatus(status string) string {
+	normalized := strings.ToLower(strings.TrimSpace(status))
+	if normalized == "" {
+		return "unknown"
+	}
+
+	return normalized
+}
+
+func isTradingEnabled(status string) bool {
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "online":
+		return true
+	default:
+		return false
+	}
 }
