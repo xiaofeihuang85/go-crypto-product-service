@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/client"
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/model"
+	"github.com/xiaofeihuang85/go-crypto-product-service/internal/store"
 )
 
 var (
@@ -22,11 +24,18 @@ type CoinbaseProductGetter interface {
 
 type ProductService struct {
 	coinbaseClient CoinbaseProductGetter
+	cache          ProductCache
 }
 
-func NewProductService(coinbaseClient CoinbaseProductGetter) *ProductService {
+type ProductCache interface {
+	GetProduct(ctx context.Context, productID string) (model.ProductResponse, error)
+	SetProduct(ctx context.Context, product model.ProductResponse) error
+}
+
+func NewProductService(coinbaseClient CoinbaseProductGetter, cache ProductCache) *ProductService {
 	return &ProductService{
 		coinbaseClient: coinbaseClient,
+		cache:          cache,
 	}
 }
 
@@ -34,6 +43,18 @@ func (s *ProductService) GetProduct(ctx context.Context, productID string) (mode
 	normalizedProductID := strings.ToUpper(strings.TrimSpace(productID))
 	if normalizedProductID == "" {
 		return model.ProductResponse{}, ErrInvalidProductID
+	}
+
+	if s.cache != nil {
+		cachedProduct, err := s.cache.GetProduct(ctx, normalizedProductID)
+		switch {
+		case err == nil:
+			cachedProduct.CacheStatus = "hit"
+			return cachedProduct, nil
+		case errors.Is(err, store.ErrCacheMiss):
+		default:
+			log.Printf("redis cache get failed for %s: %v", normalizedProductID, err)
+		}
 	}
 
 	product, err := s.coinbaseClient.GetProduct(ctx, normalizedProductID)
@@ -46,7 +67,16 @@ func (s *ProductService) GetProduct(ctx context.Context, productID string) (mode
 		}
 	}
 
-	return toProductResponse(product), nil
+	response := toProductResponse(product)
+	response.CacheStatus = "miss"
+
+	if s.cache != nil {
+		if err := s.cache.SetProduct(ctx, response); err != nil {
+			log.Printf("redis cache set failed for %s: %v", normalizedProductID, err)
+		}
+	}
+
+	return response, nil
 }
 
 func toProductResponse(product model.CoinbaseProduct) model.ProductResponse {

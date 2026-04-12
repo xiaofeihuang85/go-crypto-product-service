@@ -11,7 +11,7 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 4 is now focused on domain transformation:
+Phase 5 is now focused on Redis-backed caching:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -20,9 +20,12 @@ Phase 4 is now focused on domain transformation:
 - Thin Coinbase client for fetching a single product from the public market
   products endpoint
 - Transforms Coinbase data into a cleaner market view with derived fields such as `market_pair`, `is_trading_enabled`, and `source`
+- Read-through Redis cache with a short TTL for product lookups
+- Cache is best-effort: Redis failures fall back to live Coinbase data instead of
+  failing the request
 - Basic server-side and upstream HTTP timeouts for safer local operation
 
-Redis cache and Docker Compose setup will be added in later phases.
+Docker Compose setup will be added in later phases.
 
 ## Planned Architecture
 
@@ -78,6 +81,15 @@ curl http://localhost:8080/health
 curl http://localhost:8080/products/BTC-USD
 ```
 
+Optional cache-related environment variables:
+
+```bash
+REDIS_ADDR=localhost:6379
+REDIS_PASSWORD=
+REDIS_DB=0
+CACHE_TTL=60s
+```
+
 Example product response:
 
 ```json
@@ -91,6 +103,7 @@ Example product response:
   "is_trading_enabled": true,
   "price": "70813.85",
   "price_change_24h": "-2.66118725176928",
+  "cache_status": "miss",
   "source": "coinbase"
 }
 ```
@@ -98,6 +111,12 @@ Example product response:
 The product response is intentionally service-owned rather than a raw pass-through
 of the upstream Coinbase schema. This keeps the API easier to reason about and
 sets up a cleaner contract for the upcoming cache layer.
+
+The cache strategy is intentionally simple in this phase: `GET /products/{product_id}`
+uses a read-through flow with a short TTL and a cache key shaped like `product:{product_id}`.
+More advanced invalidation, refresh behavior, and multi-node cache coordination are
+future-scaling concerns that can be described and discussed without fully implementing
+them in this version of the project.
 
 ## Scope Notes
 

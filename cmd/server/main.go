@@ -8,6 +8,7 @@ import (
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/client"
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/config"
 	"github.com/xiaofeihuang85/go-crypto-product-service/internal/service"
+	"github.com/xiaofeihuang85/go-crypto-product-service/internal/store"
 )
 
 func main() {
@@ -16,7 +17,8 @@ func main() {
 		Timeout: cfg.UpstreamTimeout,
 	}
 	coinbaseClient := client.NewCoinbaseClient(cfg.CoinbaseBaseURL, httpClient)
-	productService := service.NewProductService(coinbaseClient)
+	productCache := store.NewRedisProductCache(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB, cfg.CacheTTL)
+	productService := service.NewProductService(coinbaseClient, productCache)
 	server := &http.Server{
 		Addr:         cfg.Address(),
 		Handler:      api.NewRouter(cfg.ServiceName, productService),

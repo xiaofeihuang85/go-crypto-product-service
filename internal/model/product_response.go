@@ -10,5 +10,6 @@ type ProductResponse struct {
 	IsTradingEnabled bool   `json:"is_trading_enabled"`
 	Price            string `json:"price"`
 	PriceChange24H   string `json:"price_change_24h"`
+	CacheStatus      string `json:"cache_status"`
 	Source           string `json:"source"`
 }
