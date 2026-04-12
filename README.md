@@ -11,7 +11,7 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 6 is now focused on the main endpoint polish:
+Phase 7 is now focused on local operations:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -26,8 +26,9 @@ Phase 6 is now focused on the main endpoint polish:
 - Polished primary endpoint response with `cache_status` and `retrieved_at`
 - Structured API errors with consistent error codes and request paths
 - Basic server-side and upstream HTTP timeouts for safer local operation
+- Dockerfile and Docker Compose setup for running the service with Redis locally
 
-Docker Compose setup will be added in later phases.
+Quality pass and final documentation refinement will be added in later phases.
 
 ## Planned Architecture
 
@@ -92,6 +93,26 @@ REDIS_DB=0
 CACHE_TTL=60s
 ```
 
+## Run With Docker Compose
+
+Start the app and Redis together:
+
+```bash
+docker compose -f deployments/docker-compose.yml up --build
+```
+
+Stop the stack:
+
+```bash
+docker compose -f deployments/docker-compose.yml down
+```
+
+Once the stack is running, the API is available at:
+
+```bash
+http://localhost:8080
+```
+
 Example product response:
 
 ```json
@@ -125,6 +146,12 @@ Example cache flow:
 
 1. First request for `GET /products/BTC-USD` returns `cache_status: "miss"` and stores the transformed response in Redis.
 2. A repeated request for the same product returns `cache_status: "hit"` from Redis while keeping `source: "coinbase"` to show the origin of the data.
+
+You can test that flow locally with:
+
+```bash
+curl http://localhost:8080/products/BTC-USD
+```
 
 Example error response:
 

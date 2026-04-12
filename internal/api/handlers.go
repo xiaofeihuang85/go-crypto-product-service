@@ -26,7 +26,7 @@ func rootHandler(serviceName string) http.HandlerFunc {
 		writeJSON(w, http.StatusOK, model.ServiceInfoResponse{
 			Service: serviceName,
 			Status:  "ready",
-			Message: "phase 6 product cache endpoint is running",
+			Message: "product cache service is running",
 		})
 	}
 }

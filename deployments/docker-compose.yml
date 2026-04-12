@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    container_name: go-crypto-product-service
+    depends_on:
+      - redis
+    environment:
+      PORT: "8080"
+      COINBASE_BASE_URL: "https://api.coinbase.com"
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+      CACHE_TTL: "60s"
+    ports:
+      - "8080:8080"
+
+  redis:
+    image: redis:7-alpine
+    container_name: go-crypto-product-service-redis
+    ports:
+      - "6379:6379"
