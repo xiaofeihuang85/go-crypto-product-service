@@ -40,12 +40,18 @@ func NewProductService(coinbaseClient CoinbaseProductGetter, cache ProductCache)
 	}
 }
 
+// GetProduct returns a service-owned product response for the requested product ID.
+// It uses a read through cache flow: check Redis first, fall back to Coinbase public API on a miss,
+// then cache the transformed response before returning it.
+// Redis is treated as a cache layer in this version of the service,
+// so cache failures are logged but not taking down the endpoint entirely.
 func (s *ProductService) GetProduct(ctx context.Context, productID string) (model.ProductResponse, error) {
 	normalizedProductID := strings.ToUpper(strings.TrimSpace(productID))
 	if normalizedProductID == "" {
 		return model.ProductResponse{}, ErrInvalidProductID
 	}
 
+	// Prefer the cache first so repeated reads can avoid unnecessary upstream calls.
 	if s.cache != nil {
 		cachedProduct, err := s.cache.GetProduct(ctx, normalizedProductID)
 		switch {
@@ -53,7 +59,9 @@ func (s *ProductService) GetProduct(ctx context.Context, productID string) (mode
 			cachedProduct.CacheStatus = "hit"
 			return cachedProduct, nil
 		case errors.Is(err, store.ErrCacheMiss):
+			// Cache misses are expected and should fall through to the Coinbase lookup.
 		default:
+			// Cache availability should not take down the endpoint in this simplified version.
 			log.Printf("redis cache get failed for %s: %v", normalizedProductID, err)
 		}
 	}
@@ -68,9 +76,11 @@ func (s *ProductService) GetProduct(ctx context.Context, productID string) (mode
 		}
 	}
 
+	// Transform the upstream Coinbase response into the service-owned API contract.
 	response := toProductResponse(product)
 	response.CacheStatus = "miss"
 
+	// Write back to the cache after a successful upstream fetch.
 	if s.cache != nil {
 		if err := s.cache.SetProduct(ctx, response); err != nil {
 			log.Printf("redis cache set failed for %s: %v", normalizedProductID, err)

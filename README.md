@@ -11,7 +11,7 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 7 is now focused on local operations:
+Phase 8 is focused on the final quality pass:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -27,8 +27,9 @@ Phase 7 is now focused on local operations:
 - Structured API errors with consistent error codes and request paths
 - Basic server-side and upstream HTTP timeouts for safer local operation
 - Dockerfile and Docker Compose setup for running the service with Redis locally
+- Focused tests around service behavior and handler error mapping
 
-Quality pass and final documentation refinement will be added in later phases.
+The remaining work in this phase is final verification and submission polish.
 
 ## Planned Architecture
 
@@ -41,6 +42,15 @@ Quality pass and final documentation refinement will be added in later phases.
 - `internal/config`: environment-based configuration loading
 - `deployments`: local deployment assets such as Docker Compose
 - `scripts`: helper scripts for local development
+
+## Request Flow
+
+1. A client calls `GET /products/{product_id}`.
+2. The handler validates the path and delegates to the service layer.
+3. The service checks Redis using a read-through cache pattern.
+4. On cache miss, the service calls Coinbase's public market products endpoint.
+5. The Coinbase response is transformed into a service-owned product response.
+6. The transformed response is cached in Redis with a short TTL and returned to the client.
 
 ## Milestones
 
@@ -163,6 +173,37 @@ Example error response:
 }
 ```
 
+## Testing
+
+Run the focused unit tests with:
+
+```bash
+go test ./...
+```
+
+The current test suite focuses on:
+
+- product service cache hit and miss behavior
+- product transformation and normalization
+- handler status-code and error-response mapping
+
+## Assumptions And Tradeoffs
+
+- Coinbase's public market products endpoint is used as the upstream data source.
+- Redis is treated as a best-effort cache. Cache failures should degrade to live Coinbase fetches rather than fail the request immediately.
+- Cache invalidation is intentionally simplified to a short TTL.
+- The response contract is service-owned rather than a raw Coinbase pass-through so the cache layer can remain stable even if the upstream schema changes.
+
+## Future Scaling Notes
+
+Areas intentionally left out of this implementation but worth discussing in an interview:
+
+- retry and backoff strategy for upstream failures
+- active cache invalidation and background refresh
+- request collapsing to reduce duplicate upstream calls during cache misses
+- metrics, tracing, and structured logging
+- multi-node cache coordination and broader production deployment concerns
+
 ## Scope Notes
 
 This project is meant to represent a clean, well-explained subset of a cache
@@ -172,5 +213,10 @@ implemented and partly documented as design tradeoffs.
 
 ## AI Usage
 
-AI assistance is being used selectively for scaffolding, editing support, and
-iteration on documentation and implementation structure.
+AI assistance was used selectively for scaffolding, editing support, unit-test
+drafting, and iteration on documentation and implementation structure.
+
+It primarily helped speed up repetitive setup work, compare implementation
+options, and tighten the codebase during later quality passes. Final architecture,
+scope, API design, caching behavior, and testing choices were reviewed and
+directed manually.
