@@ -1,12 +1,12 @@
 # go-crypto-product-service
 
-`go-crypto-product-service` is a small backend service in Go for fetching crypto
-product data from Coinbase public APIs, applying domain-specific transformations,
-and exposing the result through a simple HTTP API.
+`go-crypto-product-service` is a small Go backend service that fetches product
+data from Coinbase public APIs, transforms it into a service-owned response
+model, and exposes it through a simple HTTP API.
 
 The project is intentionally scoped as a simplified product cache service. The
 goal is to demonstrate clean service structure, clear dependency boundaries,
-external API integration, caching considerations, and local operability without
+external API integration, caching behavior, and local operability without
 overbuilding a production-grade distributed cache system.
 
 ## Current Status
@@ -42,6 +42,12 @@ The remaining work in this phase is final verification and submission polish.
 - `internal/config`: environment-based configuration loading
 - `deployments`: local deployment assets such as Docker Compose
 - `scripts`: helper scripts for local development
+
+```text
+client -> api -> service -> redis cache
+                      \
+                       -> coinbase public api
+```
 
 ## Request Flow
 
@@ -144,10 +150,10 @@ Example product response:
 
 The product response is intentionally service-owned rather than a raw pass-through
 of the upstream Coinbase schema. This keeps the API easier to reason about and
-sets up a cleaner contract for the upcoming cache layer.
+helps stabilize the contract around the cache layer.
 
-The cache strategy is intentionally simple in this phase: `GET /products/{product_id}`
-uses a read-through flow with a short TTL and a cache key shaped like `product:{product_id}`.
+The cache strategy is intentionally simple: `GET /products/{product_id}` uses a
+read-through flow with a short TTL and a cache key shaped like `product:{product_id}`.
 More advanced invalidation, refresh behavior, and multi-node cache coordination are
 future-scaling concerns that can be described and discussed without fully implementing
 them in this version of the project.
