@@ -11,7 +11,8 @@ overbuilding a production-grade distributed cache system.
 
 ## Current Status
 
-Phase 8 is focused on the final quality pass:
+Phase 8 is focused on the final quality pass, and a small frontend page has been
+added to exercise the backend flow end to end:
 
 - Runnable Go executable in `cmd/server/main.go`
 - Standard-library HTTP server with route registration
@@ -28,6 +29,7 @@ Phase 8 is focused on the final quality pass:
 - Basic server-side and upstream HTTP timeouts for safer local operation
 - Dockerfile and Docker Compose setup for running the service with Redis locally
 - Focused tests around service behavior and handler error mapping
+- Minimal single-page frontend at `/app` with loading, success, and error states
 
 The remaining work in this phase is final verification and submission polish.
 
@@ -129,6 +131,12 @@ Once the stack is running, the API is available at:
 http://localhost:8080
 ```
 
+The frontend UI is available at:
+
+```bash
+http://localhost:8080/app
+```
+
 Example product response:
 
 ```json
@@ -168,6 +176,13 @@ You can test that flow locally with:
 ```bash
 curl http://localhost:8080/products/BTC-USD
 ```
+
+Or use the frontend page to drive the same request flow through the browser:
+
+1. Open `http://localhost:8080/app`
+2. Enter a product ID such as `BTC-USD`
+3. Submit the request
+4. Repeat the request to observe `cache_status` change from `miss` to `hit`
 
 Example error response:
 

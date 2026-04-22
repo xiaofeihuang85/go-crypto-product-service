@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crypto Product Viewer</title>
+    <link rel="stylesheet" href="/app/styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel">
+        <p class="eyebrow">Frontend Demo</p>
+        <h1>Crypto Product Viewer</h1>
+        <p class="intro">
+          A minimal UI that exercises the backend flow end to end. Enter a product ID
+          such as <code>BTC-USD</code>, fetch the transformed response, and repeat the
+          same request to observe <code>cache_status</code> change from
+          <code>miss</code> to <code>hit</code>.
+        </p>
+
+        <form id="product-form" class="form">
+          <label class="field">
+            <span>Product ID</span>
+            <input id="product-id" name="product_id" type="text" value="BTC-USD" autocomplete="off">
+          </label>
+          <button id="submit-button" type="submit">Fetch Product</button>
+        </form>
+
+        <p id="loading-state" class="status hidden">Loading product data...</p>
+        <div id="error-state" class="error hidden" role="alert"></div>
+
+        <section id="result-card" class="result hidden" aria-live="polite">
+          <div class="result-header">
+            <h2 id="result-title">Product Details</h2>
+            <span id="cache-pill" class="pill">cache: miss</span>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-section">
+              <h3>Product</h3>
+              <dl id="product-details"></dl>
+            </div>
+
+            <div class="result-section">
+              <h3>Market Data</h3>
+              <dl id="market-details"></dl>
+            </div>
+
+            <div class="result-section">
+              <h3>Request Metadata</h3>
+              <dl id="meta-details"></dl>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app/app.js"></script>
+  </body>
+</html>
